@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{{TITLE}}</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css" />
+  <style>
+    body { font-family: sans-serif; margin: 0; }
+    #map { height: 60vh; }
+    #timeline { height: 40vh; }
+  </style>
+</head>
+<body>
+  <h2 style="text-align:center;">{{TITLE}}</h2>
+  <h4 style="text-align:center;">{{CASENUMBER}}</h4>
+  <div id="map"></div>
+  <div id="timeline"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
+  <script>
+    const data = __DATA__;
+
+    const map = L.map('map').setView([33.355, -86.81], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+    data.events.forEach(event => {
+      const marker = L.marker([event.lat, event.lng]).addTo(map);
+      marker.bindPopup(\`
+        <strong>\${event.title}</strong><br />
+        \${event.description}<br />
+        <em>\${event.category}</em><br />
+        <img src="assets/\${event.image}" style="max-width:100px;" />
+      \`);
+    });
+
+    data.routes.forEach((route, i) => {
+      if (route.length > 1) {
+        L.polyline(route, { color: data.routeColors[i] || 'blue' }).addTo(map);
+      }
+    });
+
+    const timeline = new vis.Timeline(
+      document.getElementById('timeline'),
+      new vis.DataSet(data.events.map((e, i) => ({
+        id: i,
+        content: e.title,
+        start: e.datetime
+      }))),
+      { zoomable: true, moveable: true, margin: { item: 20, axis: 40 } }
+    );
+  </script>
+</body>
+</html>
